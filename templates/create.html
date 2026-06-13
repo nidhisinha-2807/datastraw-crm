@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Create Ticket — Datastraw CRM{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto page-enter">
+
+  <div class="mb-8">
+    <a href="/" class="text-purple-400 hover:text-purple-200 text-xs font-mono transition">[ ← BACK TO DASHBOARD ]</a>
+    <p class="text-purple-400 font-mono text-xs mt-4 mb-2 tracking-widest">// INITIALIZE NEW TICKET</p>
+    <h1 class="text-3xl font-bold text-white glow-text">New Support Request</h1>
+    <p class="text-white/30 text-sm mt-1 font-mono">Fill in parameters to open a ticket</p>
+  </div>
+
+  <div class="glass p-8" style="border-color:rgba(139,92,246,0.3);">
+    <div class="corner-tl"></div>
+    <div class="corner-br"></div>
+
+    <form id="ticketForm" class="space-y-6">
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div>
+          <label class="block text-purple-300/70 text-xs font-mono mb-2 uppercase tracking-widest">Customer Name *</label>
+          <input type="text" id="customer_name" required
+            class="glass-input w-full px-4 py-3 text-sm text-white"
+            placeholder="e.g. Priya Sharma"/>
+        </div>
+        <div>
+          <label class="block text-purple-300/70 text-xs font-mono mb-2 uppercase tracking-widest">Customer Email *</label>
+          <input type="email" id="customer_email" required
+            class="glass-input w-full px-4 py-3 text-sm text-white"
+            placeholder="e.g. priya@example.com"/>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-purple-300/70 text-xs font-mono mb-2 uppercase tracking-widest">Issue Subject *</label>
+        <input type="text" id="subject" required
+          class="glass-input w-full px-4 py-3 text-sm text-white"
+          placeholder="Brief title of the issue"/>
+      </div>
+
+      <div>
+        <label class="block text-purple-300/70 text-xs font-mono mb-2 uppercase tracking-widest">Description *</label>
+        <textarea id="description" rows="4" required
+          class="glass-input w-full px-4 py-3 text-sm text-white resize-none"
+          placeholder="Describe the issue in detail..."></textarea>
+      </div>
+
+      <div>
+        <label class="block text-purple-300/70 text-xs font-mono mb-2 uppercase tracking-widest">Priority Level</label>
+        <select id="priority" class="glass-input w-full px-4 py-3 text-sm text-white">
+          <option value="Low">Low</option>
+          <option value="Medium" selected>Medium</option>
+          <option value="High">High</option>
+        </select>
+      </div>
+
+      <div id="errorMsg" class="text-red-400 text-sm hidden p-3 rounded-lg font-mono" style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);"></div>
+      <div id="successMsg" class="text-emerald-400 text-sm hidden p-3 rounded-lg font-mono" style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);"></div>
+
+      <button type="submit" class="btn-primary w-full py-3 text-sm font-mono tracking-widest">
+        SUBMIT TICKET →
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+document.getElementById("ticketForm").addEventListener("submit", async function(e) {
+  e.preventDefault();
+  const errorMsg = document.getElementById("errorMsg");
+  const successMsg = document.getElementById("successMsg");
+  errorMsg.classList.add("hidden");
+  successMsg.classList.add("hidden");
+  const payload = {
+    customer_name: document.getElementById("customer_name").value,
+    customer_email: document.getElementById("customer_email").value,
+    subject: document.getElementById("subject").value,
+    description: document.getElementById("description").value,
+    priority: document.getElementById("priority").value
+  };
+  try {
+    const res = await fetch("/api/tickets", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (res.ok) {
+      successMsg.textContent = `✓ TICKET ${data.ticket_id} INITIALIZED — REDIRECTING...`;
+      successMsg.classList.remove("hidden");
+      setTimeout(() => window.location.href = `/tickets/${data.ticket_id}`, 1500);
+    } else {
+      errorMsg.textContent = `ERROR: ${data.detail || "Unknown error"}`;
+      errorMsg.classList.remove("hidden");
+    }
+  } catch (err) {
+    errorMsg.textContent = "NETWORK ERROR — Please retry";
+    errorMsg.classList.remove("hidden");
+  }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+{% block title %}Mission Control — TicketOS{% endblock %}
+
+{% block content %}
+
+<!-- Example seed data for visual richness -->
+{% set demo = [
+  {"ticket_id":"TKT-001","customer_name":"Arjun Mehta","customer_email":"arjun@techcorp.in","subject":"Payment gateway timeout","status":"Open","priority":"High","created_at":"2026-06-10"},
+  {"ticket_id":"TKT-002","customer_name":"Priya Sharma","customer_email":"priya@startupx.com","subject":"Dashboard not loading on mobile","status":"In Progress","priority":"Medium","created_at":"2026-06-11"},
+  {"ticket_id":"TKT-003","customer_name":"Rohit Verma","customer_email":"rohit@enterprise.co","subject":"Invoice PDF export broken","status":"Closed","priority":"Low","created_at":"2026-06-11"},
+  {"ticket_id":"TKT-004","customer_name":"Sneha Patel","customer_email":"sneha@saasco.io","subject":"2FA emails not arriving","status":"Open","priority":"High","created_at":"2026-06-12"},
+  {"ticket_id":"TKT-005","customer_name":"Karan Singh","customer_email":"karan@devhub.dev","subject":"API rate limit exceeded","status":"In Progress","priority":"High","created_at":"2026-06-12"},
+  {"ticket_id":"TKT-006","customer_name":"Ananya Nair","customer_email":"ananya@cloudfirm.net","subject":"Account data not syncing","status":"Closed","priority":"Medium","created_at":"2026-06-13"},
+  {"ticket_id":"TKT-007","customer_name":"Vikram Das","customer_email":"vikram@finledger.io","subject":"CSV import returns error 500","status":"Open","priority":"Medium","created_at":"2026-06-13"},
+  {"ticket_id":"TKT-008","customer_name":"Meera Joshi","customer_email":"meera@pixelworks.in","subject":"Dark mode rendering glitch","status":"Closed","priority":"Low","created_at":"2026-06-13"}
+] %}
+
+{% set all_tickets = tickets + demo if tickets else demo %}
+{% set open_count = all_tickets | selectattr("status","equalto","Open") | list | length %}
+{% set progress_count = all_tickets | selectattr("status","equalto","In Progress") | list | length %}
+{% set closed_count = all_tickets | selectattr("status","equalto","Closed") | list | length %}
+{% set total = all_tickets | length %}
+
+<div class="page-enter">
+
+  <!-- Header -->
+  <div class="flex justify-between items-end mb-8">
+    <div>
+      <p class="text-purple-400 font-mono text-xs mb-2 tracking-widest">// SUPPORT OPERATIONS CENTER</p>
+      <h1 class="text-4xl font-bold text-white glow-text">Mission Control</h1>
+      <p class="text-white/30 text-sm mt-1 font-mono">Real-time ticket monitoring & management</p>
+    </div>
+    <div class="text-right">
+      <p class="text-white/20 font-mono text-xs" id="clock"></p>
+      <p class="text-white/20 font-mono text-xs">NODE: TICKETOS-PRIMARY</p>
+    </div>
+  </div>
+
+  <!-- Top Row: Stats + Chart -->
+  <div class="grid grid-cols-12 gap-5 mb-6">
+
+    <!-- Stat Cards (left 8 cols) -->
+    <div class="col-span-12 lg:col-span-8 grid grid-cols-2 sm:grid-cols-4 gap-4 stagger">
+
+      <!-- Total -->
+      <div class="glass-card p-5">
+        <div class="corner-tl"></div>
+        <div class="corner-br"></div>
+        <p class="text-white/30 text-xs font-mono uppercase tracking-wider mb-3">Total</p>
+        <p class="text-4xl font-bold text-white mb-1">{{ total }}</p>
+        <div class="w-full h-1 rounded-full mt-3" style="background:rgba(255,255,255,0.08)">
+          <div class="h-1 rounded-full progress-fill" style="width:100%;background:linear-gradient(90deg,#8b5cf6,#6366f1);"></div>
+        </div>
+      </div>
+
+      <!-- Open -->
+      <div class="glass-card p-5">
+        <div class="corner-tl"></div>
+        <div class="corner-br"></div>
+        <p class="text-indigo-300/60 text-xs font-mono uppercase tracking-wider mb-3">Open</p>
+        <p class="text-4xl font-bold text-indigo-300 glow-text mb-1">{{ open_count }}</p>
+        <div class="w-full h-1 rounded-full mt-3" style="background:rgba(255,255,255,0.08)">
+          {% if total > 0 %}
+          <div class="h-1 rounded-full progress-fill" style="width:{{ (open_count/total*100)|int }}%;background:linear-gradient(90deg,#6366f1,#818cf8);animation-delay:0.2s"></div>
+          {% endif %}
+        </div>
+        <p class="text-white/20 text-xs font-mono mt-1">{{ (open_count/total*100)|int if total > 0 else 0 }}% of total</p>
+      </div>
+
+      <!-- In Progress -->
+      <div class="glass-card p-5">
+        <div class="corner-tl"></div>
+        <div class="corner-br"></div>
+        <p class="text-yellow-300/60 text-xs font-mono uppercase tracking-wider mb-3">Active</p>
+        <p class="text-4xl font-bold text-yellow-300 mb-1" style="text-shadow:0 0 20px rgba(245,158,11,0.8)">{{ progress_count }}</p>
+        <div class="w-full h-1 rounded-full mt-3" style="background:rgba(255,255,255,0.08)">
+          {% if total > 0 %}
+          <div class="h-1 rounded-full progress-fill" style="width:{{ (progress_count/total*100)|int }}%;background:linear-gradient(90deg,#f59e0b,#fcd34d);animation-delay:0.3s"></div>
+          {% endif %}
+        </div>
+        <p class="text-white/20 text-xs font-mono mt-1">{{ (progress_count/total*100)|int if total > 0 else 0 }}% of total</p>
+      </div>
+
+      <!-- Closed -->
+      <div class="glass-card p-5">
+        <div class="corner-tl"></div>
+        <div class="corner-br"></div>
+        <p class="text-emerald-300/60 text-xs font-mono uppercase tracking-wider mb-3">Resolved</p>
+        <p class="text-4xl font-bold text-emerald-300 mb-1" style="text-shadow:0 0 20px rgba(16,185,129,0.8)">{{ closed_count }}</p>
+        <div class="w-full h-1 rounded-full mt-3" style="background:rgba(255,255,255,0.08)">
+          {% if total > 0 %}
+          <div class="h-1 rounded-full progress-fill" style="width:{{ (closed_count/total*100)|int }}%;background:linear-gradient(90deg,#10b981,#6ee7b7);animation-delay:0.4s"></div>
+          {% endif %}
+        </div>
+        <p class="text-white/20 text-xs font-mono mt-1">{{ (closed_count/total*100)|int if total > 0 else 0 }}% of total</p>
+      </div>
+
+      <!-- Priority Breakdown full width -->
+      <div class="col-span-2 sm:col-span-4 glass-card p-5">
+        <div class="corner-tl"></div>
+        <p class="text-white/30 text-xs font-mono uppercase tracking-wider mb-4">Priority Breakdown</p>
+        <div class="space-y-3">
+          {% set high = all_tickets | selectattr("priority","equalto","High") | list | length %}
+          {% set med = all_tickets | selectattr("priority","equalto","Medium") | list | length %}
+          {% set low = all_tickets | selectattr("priority","equalto","Low") | list | length %}
+
+          <div class="flex items-center gap-3">
+            <span class="text-red-300 text-xs font-mono w-14">HIGH</span>
+            <div class="flex-1 h-2 rounded-full" style="background:rgba(255,255,255,0.06)">
+              <div class="h-2 rounded-full progress-fill" style="width:{{ (high/total*100)|int if total>0 else 0 }}%;background:linear-gradient(90deg,#ef4444,#fca5a5);"></div>
+            </div>
+            <span class="text-red-300 text-xs font-mono w-4">{{ high }}</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-yellow-300 text-xs font-mono w-14">MED</span>
+            <div class="flex-1 h-2 rounded-full" style="background:rgba(255,255,255,0.06)">
+              <div class="h-2 rounded-full progress-fill" style="width:{{ (med/total*100)|int if total>0 else 0 }}%;background:linear-gradient(90deg,#f59e0b,#fcd34d);animation-delay:0.2s"></div>
+            </div>
+            <span class="text-yellow-300 text-xs font-mono w-4">{{ med }}</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-gray-300 text-xs font-mono w-14">LOW</span>
+            <div class="flex-1 h-2 rounded-full" style="background:rgba(255,255,255,0.06)">
+              <div class="h-2 rounded-full progress-fill" style="width:{{ (low/total*100)|int if total>0 else 0 }}%;background:linear-gradient(90deg,#6b7280,#d1d5db);animation-delay:0.4s"></div>
+            </div>
+            <span class="text-gray-300 text-xs font-mono w-4">{{ low }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bar Chart (right 4 cols) -->
+    <div class="col-span-12 lg:col-span-4 glass-card p-5">
+      <div class="corner-tl"></div>
+      <div class="corner-br"></div>
+      <p class="text-white/30 text-xs font-mono uppercase tracking-wider mb-1">Volume by Status</p>
+      <p class="text-white/15 text-xs font-mono mb-5">Last 7 days</p>
+      <div class="flex items-end justify-around h-36 gap-2">
+        <div class="flex flex-col items-center gap-2 flex-1">
+          <span class="text-indigo-300 text-xs font-mono">{{ open_count }}</span>
+          <div class="w-full rounded-t-md bar-fill" style="height:{{ [open_count * 20, 120]|min if open_count > 0 else 8 }}px;background:linear-gradient(180deg,#6366f1,rgba(99,102,241,0.3));animation-delay:0.1s;min-height:8px"></div>
+          <span class="text-white/30 text-xs font-mono">Open</span>
+        </div>
+        <div class="flex flex-col items-center gap-2 flex-1">
+          <span class="text-yellow-300 text-xs font-mono">{{ progress_count }}</span>
+          <div class="w-full rounded-t-md bar-fill" style="height:{{ [progress_count * 20, 120]|min if progress_count > 0 else 8 }}px;background:linear-gradient(180deg,#f59e0b,rgba(245,158,11,0.3));animation-delay:0.2s;min-height:8px"></div>
+          <span class="text-white/30 text-xs font-mono">Active</span>
+        </div>
+        <div class="flex flex-col items-center gap-2 flex-1">
+          <span class="text-emerald-300 text-xs font-mono">{{ closed_count }}</span>
+          <div class="w-full rounded-t-md bar-fill" style="height:{{ [closed_count * 20, 120]|min if closed_count > 0 else 8 }}px;background:linear-gradient(180deg,#10b981,rgba(16,185,129,0.3));animation-delay:0.3s;min-height:8px"></div>
+          <span class="text-white/30 text-xs font-mono">Closed</span>
+        </div>
+        <div class="flex flex-col items-center gap-2 flex-1">
+          <span class="text-purple-300 text-xs font-mono">{{ total }}</span>
+          <div class="w-full rounded-t-md bar-fill" style="height:{{ [total * 10, 120]|min if total > 0 else 8 }}px;background:linear-gradient(180deg,#8b5cf6,rgba(139,92,246,0.3));animation-delay:0.4s;min-height:8px"></div>
+          <span class="text-white/30 text-xs font-mono">Total</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search + Filter -->
+  <form method="get" action="/" class="flex flex-col sm:flex-row gap-3 mb-5">
+    <div class="relative flex-1">
+      <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      <input type="text" name="search" value="{{ current_search }}"
+        placeholder="Search by name, email, ID or description..."
+        class="glass-input w-full pl-10 pr-4 py-2.5 text-sm"
+        oninput="this.form.submit()"/>
+    </div>
+    <select name="status" onchange="this.form.submit()" class="glass-input px-4 py-2.5 text-sm">
+      <option value="">All Statuses</option>
+      <option value="Open" {% if current_status == 'Open' %}selected{% endif %}>Open</option>
+      <option value="In Progress" {% if current_status == 'In Progress' %}selected{% endif %}>In Progress</option>
+      <option value="Closed" {% if current_status == 'Closed' %}selected{% endif %}>Closed</option>
+    </select>
+  </form>
+
+  <!-- Ticket Table -->
+  <div class="glass overflow-hidden">
+    <div class="px-6 py-3 flex items-center justify-between" style="border-bottom:1px solid rgba(139,92,246,0.15);">
+      <div class="flex items-center gap-2">
+        <span class="pulse-dot"></span>
+        <span class="text-white/40 text-xs font-mono uppercase tracking-widest">Live Ticket Feed — {{ all_tickets|length }} records</span>
+      </div>
+      {% if not tickets %}
+      <span class="text-purple-400/50 text-xs font-mono">[ DEMO DATA ]</span>
+      {% endif %}
+    </div>
+    <table class="w-full text-sm">
+      <thead>
+        <tr style="border-bottom:1px solid rgba(139,92,246,0.1);">
+          <th class="px-6 py-4 text-left text-white/30 text-xs font-mono uppercase tracking-wider">ID</th>
+          <th class="px-6 py-4 text-left text-white/30 text-xs font-mono uppercase tracking-wider">Customer</th>
+          <th class="px-6 py-4 text-left text-white/30 text-xs font-mono uppercase tracking-wider">Subject</th>
+          <th class="px-6 py-4 text-left text-white/30 text-xs font-mono uppercase tracking-wider">Priority</th>
+          <th class="px-6 py-4 text-left text-white/30 text-xs font-mono uppercase tracking-wider">Status</th>
+          <th class="px-6 py-4 text-left text-white/30 text-xs font-mono uppercase tracking-wider">Date</th>
+          <th class="px-6 py-4"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in all_tickets %}
+        <tr class="ticket-row">
+          <td class="px-6 py-4 font-mono text-purple-300 text-xs font-semibold">{{ t.ticket_id }}</td>
+          <td class="px-6 py-4">
+            <p class="text-white font-medium">{{ t.customer_name }}</p>
+            <p class="text-white/30 text-xs">{{ t.customer_email }}</p>
+          </td>
+          <td class="px-6 py-4 text-white/60 max-w-xs">{{ t.subject }}</td>
+          <td class="px-6 py-4">
+            {% if t.priority == 'High' %}<span class="badge-high text-xs px-2.5 py-1 rounded-full font-medium">High</span>
+            {% elif t.priority == 'Medium' %}<span class="badge-medium text-xs px-2.5 py-1 rounded-full font-medium">Medium</span>
+            {% else %}<span class="badge-low text-xs px-2.5 py-1 rounded-full font-medium">Low</span>{% endif %}
+          </td>
+          <td class="px-6 py-4">
+            {% if t.status == 'Open' %}<span class="badge-open text-xs px-2.5 py-1 rounded-full font-medium">Open</span>
+            {% elif t.status == 'In Progress' %}<span class="badge-progress text-xs px-2.5 py-1 rounded-full font-medium">In Progress</span>
+            {% else %}<span class="badge-closed text-xs px-2.5 py-1 rounded-full font-medium">Closed</span>{% endif %}
+          </td>
+          <td class="px-6 py-4 text-white/30 text-xs font-mono">{{ t.created_at[:10] if t.created_at|length > 10 else t.created_at }}</td>
+          <td class="px-6 py-4">
+            {% if tickets %}
+            <a href="/tickets/{{ t.ticket_id }}" class="text-purple-400 hover:text-purple-200 text-xs font-mono transition" style="text-shadow:0 0 10px rgba(139,92,246,0.5)">[ VIEW ]</a>
+            {% else %}
+            <span class="text-white/20 text-xs font-mono">[ DEMO ]</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+function updateClock() {
+  document.getElementById('clock').textContent = new Date().toUTCString().replace('GMT','UTC');
+}
+setInterval(updateClock, 1000);
+updateClock();
+</script>
+{% endblock %}

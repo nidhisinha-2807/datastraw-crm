@@ -1,0 +1,9 @@
+/* Custom styles — most styling is handled by Tailwind CDN */
+
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+.font-mono {
+  font-family: 'Courier New', monospace;
+}

@@ -1,0 +1,16 @@
+# Virtual Environment (Python local packages)
+venv/
+ENV/
+env/
+
+# Python caching files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Database (Keep your local database binary out of GitHub)
+*.db
+*.sqlite3
+
+# Environment variables / Secret configurations
+.env
