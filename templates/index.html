@@ -3,13 +3,8 @@
 
 {% block content %}
 
-{# Python handles array sanitization and combined fallback tracking safely #}
+{# All metrics and dataset arrays are fed directly from the Python backend router context to remain stable #}
 {% set all_tickets = tickets if tickets else [] %}
-
-{% set open_count = all_tickets | selectattr("status","equalto","Open") | list | length %}
-{% set progress_count = all_tickets | selectattr("status","equalto","In Progress") | list | length %}
-{% set closed_count = all_tickets | selectattr("status","equalto","Closed") | list | length %}
-{% set total = all_tickets | length %}
 
 <div class="page-enter">
 
@@ -82,10 +77,6 @@
         <div class="corner-tl"></div>
         <p class="text-white/30 text-xs font-mono uppercase tracking-wider mb-4">Priority Breakdown</p>
         <div class="space-y-3">
-          {% set high = all_tickets | selectattr("priority","equalto","High") | list | length %}
-          {% set med = all_tickets | selectattr("priority","equalto","Medium") | list | length %}
-          {% set low = all_tickets | selectattr("priority","equalto","Low") | list | length %}
-
           <div class="flex items-center gap-3">
             <span class="text-red-300 text-xs font-mono w-14">HIGH</span>
             <div class="flex-1 h-2 rounded-full" style="background:rgba(255,255,255,0.06)">
