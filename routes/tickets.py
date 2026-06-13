@@ -89,6 +89,8 @@ async def update_ticket(ticket_id: str, update: TicketUpdate):
 
 # ─── PAGE ROUTES ──────────────────────────────────────────
 
+# ─── PAGE ROUTES ──────────────────────────────────────────
+
 @router.get("/", response_class=HTMLResponse)
 async def home(request: Request, status: str = None, search: str = None):
     db = await get_db()
@@ -103,36 +105,22 @@ async def home(request: Request, status: str = None, search: str = None):
             like = f"%{search}%"
             params.extend([like, like, like, like])
         query += " ORDER BY created_at DESC"
+        
         cursor = await db.execute(query, params)
         rows = await cursor.fetchall()
-        tickets = [dict(row) for row in rows]
+        
+        # Explicit column-to-value key parsing safely maps aiosqlite structures
+        columns = [description[0] for description in cursor.description]
+        tickets = []
+        for row in rows:
+            ticket_dict = dict(zip(columns, row))
+            tickets.append(ticket_dict)
+            
         return templates.TemplateResponse("index.html", {
             "request": request,
-            "tickets": tickets,
+            "tickets": tickets if tickets else None, # Clean ternary interface passing
             "current_status": status or "",
             "current_search": search or ""
-        })
-    finally:
-        await db.close()
-
-@router.get("/create", response_class=HTMLResponse)
-async def create_page(request: Request):
-    return templates.TemplateResponse("create.html", {"request": request})
-
-@router.get("/tickets/{ticket_id}", response_class=HTMLResponse)
-async def ticket_detail_page(request: Request, ticket_id: str):
-    db = await get_db()
-    try:
-        cursor = await db.execute("SELECT * FROM tickets WHERE ticket_id = ?", (ticket_id,))
-        ticket = await cursor.fetchone()
-        if not ticket:
-            raise HTTPException(status_code=404, detail="Ticket not found")
-        cursor2 = await db.execute("SELECT * FROM notes WHERE ticket_id = ? ORDER BY created_at DESC", (ticket_id,))
-        notes = await cursor2.fetchall()
-        return templates.TemplateResponse("ticket_detail.html", {
-            "request": request,
-            "ticket": dict(ticket),
-            "notes": [dict(n) for n in notes]
         })
     finally:
         await db.close()
