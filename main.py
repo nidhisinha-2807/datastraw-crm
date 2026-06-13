@@ -6,6 +6,7 @@ from routes.tickets import router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Initializes your clean SQLite tables on system container spin-up
     await init_db()
     yield
 

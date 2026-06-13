@@ -89,8 +89,6 @@ async def update_ticket(ticket_id: str, update: TicketUpdate):
 
 # ─── PAGE ROUTES ──────────────────────────────────────────
 
-# ─── PAGE ROUTES ──────────────────────────────────────────
-
 @router.get("/", response_class=HTMLResponse)
 async def home(request: Request, status: str = None, search: str = None):
     db = await get_db()
@@ -109,13 +107,11 @@ async def home(request: Request, status: str = None, search: str = None):
         cursor = await db.execute(query, params)
         rows = await cursor.fetchall()
         
-        # Parse SQL rows safely
         columns = [description[0] for description in cursor.description]
         db_tickets = []
         for row in rows:
             db_tickets.append(dict(zip(columns, row)))
             
-        # Hardcoded Indian Tech Company Demo items
         demo_tickets = [
             {"ticket_id":"TKT-001","customer_name":"Arjun Mehta","customer_email":"arjun@techcorp.in","subject":"Payment gateway timeout","status":"Open","priority":"High","created_at":"2026-06-10"},
             {"ticket_id":"TKT-002","customer_name":"Priya Sharma","customer_email":"priya@startupx.com","subject":"Dashboard not loading on mobile","status":"In Progress","priority":"Medium","created_at":"2026-06-11"},
@@ -127,11 +123,26 @@ async def home(request: Request, status: str = None, search: str = None):
             {"ticket_id":"TKT-008","customer_name":"Meera Joshi","customer_email":"meera@pixelworks.in","subject":"Dark mode rendering glitch","status":"Closed","priority":"Low","created_at":"2026-06-13"}
         ]
         
-        # Dataset allocation
-        all_tickets = db_tickets if db_tickets else demo_tickets
-        is_demo = len(db_tickets) == 0
+        # Decide dataset allocation
+        db_tickets_found = len(db_tickets) > 0
+        all_tickets = db_tickets if db_tickets_found else demo_tickets
+        is_demo = not db_tickets_found
         
-        # Calculate counters purely in Python
+        # Apply clean functional filtering to Demo lists when selected
+        if is_demo:
+            if status:
+                all_tickets = [t for t in all_tickets if t.get("status") == status]
+            if search:
+                s_lower = search.lower()
+                all_tickets = [
+                    t for t in all_tickets if 
+                    s_lower in t.get("customer_name", "").lower() or
+                    s_lower in t.get("customer_email", "").lower() or
+                    s_lower in t.get("ticket_id", "").lower() or
+                    s_lower in t.get("subject", "").lower()
+                ]
+        
+        # Pre-calculate counts in Python to preserve Python 3.14 safety boundaries
         total = len(all_tickets)
         open_count = sum(1 for t in all_tickets if t.get("status") == "Open")
         progress_count = sum(1 for t in all_tickets if t.get("status") == "In Progress")
@@ -141,7 +152,6 @@ async def home(request: Request, status: str = None, search: str = None):
         med = sum(1 for t in all_tickets if t.get("priority") == "Medium")
         low = sum(1 for t in all_tickets if t.get("priority") == "Low")
         
-        # Pre-calculate percentage allocations safely
         open_pct = int((open_count / total) * 100) if total > 0 else 0
         progress_pct = int((progress_count / total) * 100) if total > 0 else 0
         closed_pct = int((closed_count / total) * 100) if total > 0 else 0
@@ -169,6 +179,28 @@ async def home(request: Request, status: str = None, search: str = None):
             "low_pct": low_pct,
             "current_status": status or "",
             "current_search": search or ""
+        })
+    finally:
+        await db.close()
+
+@router.get("/create", response_class=HTMLResponse)
+async def create_page(request: Request):
+    return templates.TemplateResponse("create.html", {"request": request})
+
+@router.get("/tickets/{ticket_id}", response_class=HTMLResponse)
+async def ticket_detail_page(request: Request, ticket_id: str):
+    db = await get_db()
+    try:
+        cursor = await db.execute("SELECT * FROM tickets WHERE ticket_id = ?", (ticket_id,))
+        ticket = await cursor.fetchone()
+        if not ticket:
+            raise HTTPException(status_code=404, detail="Ticket not found")
+        cursor2 = await db.execute("SELECT * FROM notes WHERE ticket_id = ? ORDER BY created_at DESC", (ticket_id,))
+        notes = await cursor2.fetchall()
+        return templates.TemplateResponse("ticket_detail.html", {
+            "request": request,
+            "ticket": dict(ticket),
+            "notes": [dict(n) for n in notes]
         })
     finally:
         await db.close()

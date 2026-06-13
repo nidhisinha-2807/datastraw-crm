@@ -3,6 +3,9 @@
 
 {% block content %}
 
+{# Data and metrics arrays are passed directly from the python backend context #}
+{% set all_tickets = tickets if tickets else [] %}
+
 <div class="page-enter">
 
   <div class="flex justify-between items-end mb-8">
@@ -12,6 +15,11 @@
       <p class="text-white/30 text-sm mt-1 font-mono">Real-time ticket monitoring & management</p>
     </div>
     <div class="text-right">
+      <div class="mb-2">
+        <a href="/create" class="inline-flex items-center gap-2 px-4 py-2 text-xs font-mono font-semibold text-purple-950 bg-purple-400 hover:bg-purple-300 rounded transition shadow-[0_0_15px_rgba(139,92,246,0.4)]">
+          + NEW TICKET
+        </a>
+      </div>
       <p class="text-white/20 font-mono text-xs" id="clock"></p>
       <p class="text-white/20 font-mono text-xs">NODE: TICKETOS-PRIMARY</p>
     </div>
@@ -37,7 +45,9 @@
         <p class="text-indigo-300/60 text-xs font-mono uppercase tracking-wider mb-3">Open</p>
         <p class="text-4xl font-bold text-indigo-300 glow-text mb-1">{{ open_count }}</p>
         <div class="w-full h-1 rounded-full mt-3" style="background:rgba(255,255,255,0.08)">
+          {% if total > 0 %}
           <div class="h-1 rounded-full progress-fill" style="width:{{ open_pct }}%;background:linear-gradient(90deg,#6366f1,#818cf8);animation-delay:0.2s"></div>
+          {% endif %}
         </div>
         <p class="text-white/20 text-xs font-mono mt-1">{{ open_pct }}% of total</p>
       </div>
@@ -48,7 +58,9 @@
         <p class="text-yellow-300/60 text-xs font-mono uppercase tracking-wider mb-3">Active</p>
         <p class="text-4xl font-bold text-yellow-300 mb-1" style="text-shadow:0 0 20px rgba(245,158,11,0.8)">{{ progress_count }}</p>
         <div class="w-full h-1 rounded-full mt-3" style="background:rgba(255,255,255,0.08)">
+          {% if total > 0 %}
           <div class="h-1 rounded-full progress-fill" style="width:{{ progress_pct }}%;background:linear-gradient(90deg,#f59e0b,#fcd34d);animation-delay:0.3s"></div>
+          {% endif %}
         </div>
         <p class="text-white/20 text-xs font-mono mt-1">{{ progress_pct }}% of total</p>
       </div>
@@ -59,7 +71,9 @@
         <p class="text-emerald-300/60 text-xs font-mono uppercase tracking-wider mb-3">Resolved</p>
         <p class="text-4xl font-bold text-emerald-300 mb-1" style="text-shadow:0 0 20px rgba(16,185,129,0.8)">{{ closed_count }}</p>
         <div class="w-full h-1 rounded-full mt-3" style="background:rgba(255,255,255,0.08)">
+          {% if total > 0 %}
           <div class="h-1 rounded-full progress-fill" style="width:{{ closed_pct }}%;background:linear-gradient(90deg,#10b981,#6ee7b7);animation-delay:0.4s"></div>
+          {% endif %}
         </div>
         <p class="text-white/20 text-xs font-mono mt-1">{{ closed_pct }}% of total</p>
       </div>
@@ -162,7 +176,7 @@
         </tr>
       </thead>
       <tbody>
-        {% for t in tickets %}
+        {% for t in all_tickets %}
         <tr class="ticket-row">
           <td class="px-6 py-4 font-mono text-purple-300 text-xs font-semibold">{{ t.ticket_id }}</td>
           <td class="px-6 py-4">
