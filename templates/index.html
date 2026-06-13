@@ -3,7 +3,6 @@
 
 {% block content %}
 
-<!-- Example seed data for visual richness -->
 {% set demo = [
   {"ticket_id":"TKT-001","customer_name":"Arjun Mehta","customer_email":"arjun@techcorp.in","subject":"Payment gateway timeout","status":"Open","priority":"High","created_at":"2026-06-10"},
   {"ticket_id":"TKT-002","customer_name":"Priya Sharma","customer_email":"priya@startupx.com","subject":"Dashboard not loading on mobile","status":"In Progress","priority":"Medium","created_at":"2026-06-11"},
@@ -15,7 +14,12 @@
   {"ticket_id":"TKT-008","customer_name":"Meera Joshi","customer_email":"meera@pixelworks.in","subject":"Dark mode rendering glitch","status":"Closed","priority":"Low","created_at":"2026-06-13"}
 ] %}
 
-{% set all_tickets = tickets + demo if tickets else demo %}
+{# Safe array assignment to prevent template tuple key errors #}
+{% set all_tickets = tickets %}
+{% if not tickets %}
+  {% set all_tickets = demo %}
+{% endif %}
+
 {% set open_count = all_tickets | selectattr("status","equalto","Open") | list | length %}
 {% set progress_count = all_tickets | selectattr("status","equalto","In Progress") | list | length %}
 {% set closed_count = all_tickets | selectattr("status","equalto","Closed") | list | length %}
@@ -23,7 +27,6 @@
 
 <div class="page-enter">
 
-  <!-- Header -->
   <div class="flex justify-between items-end mb-8">
     <div>
       <p class="text-purple-400 font-mono text-xs mb-2 tracking-widest">// SUPPORT OPERATIONS CENTER</p>
@@ -36,13 +39,10 @@
     </div>
   </div>
 
-  <!-- Top Row: Stats + Chart -->
   <div class="grid grid-cols-12 gap-5 mb-6">
 
-    <!-- Stat Cards (left 8 cols) -->
     <div class="col-span-12 lg:col-span-8 grid grid-cols-2 sm:grid-cols-4 gap-4 stagger">
 
-      <!-- Total -->
       <div class="glass-card p-5">
         <div class="corner-tl"></div>
         <div class="corner-br"></div>
@@ -53,7 +53,6 @@
         </div>
       </div>
 
-      <!-- Open -->
       <div class="glass-card p-5">
         <div class="corner-tl"></div>
         <div class="corner-br"></div>
@@ -67,7 +66,6 @@
         <p class="text-white/20 text-xs font-mono mt-1">{{ (open_count/total*100)|int if total > 0 else 0 }}% of total</p>
       </div>
 
-      <!-- In Progress -->
       <div class="glass-card p-5">
         <div class="corner-tl"></div>
         <div class="corner-br"></div>
@@ -81,7 +79,6 @@
         <p class="text-white/20 text-xs font-mono mt-1">{{ (progress_count/total*100)|int if total > 0 else 0 }}% of total</p>
       </div>
 
-      <!-- Closed -->
       <div class="glass-card p-5">
         <div class="corner-tl"></div>
         <div class="corner-br"></div>
@@ -95,7 +92,6 @@
         <p class="text-white/20 text-xs font-mono mt-1">{{ (closed_count/total*100)|int if total > 0 else 0 }}% of total</p>
       </div>
 
-      <!-- Priority Breakdown full width -->
       <div class="col-span-2 sm:col-span-4 glass-card p-5">
         <div class="corner-tl"></div>
         <p class="text-white/30 text-xs font-mono uppercase tracking-wider mb-4">Priority Breakdown</p>
@@ -129,7 +125,6 @@
       </div>
     </div>
 
-    <!-- Bar Chart (right 4 cols) -->
     <div class="col-span-12 lg:col-span-4 glass-card p-5">
       <div class="corner-tl"></div>
       <div class="corner-br"></div>
@@ -160,7 +155,6 @@
     </div>
   </div>
 
-  <!-- Search + Filter -->
   <form method="get" action="/" class="flex flex-col sm:flex-row gap-3 mb-5">
     <div class="relative flex-1">
       <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
@@ -177,7 +171,6 @@
     </select>
   </form>
 
-  <!-- Ticket Table -->
   <div class="glass overflow-hidden">
     <div class="px-6 py-3 flex items-center justify-between" style="border-bottom:1px solid rgba(139,92,246,0.15);">
       <div class="flex items-center gap-2">
