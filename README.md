@@ -59,3 +59,15 @@ datastraw-crm/
 ├── static/          # CSS
 └── requirements.txt
 ```
+## 📊 Live Monitoring & Mock Data Architecture
+
+To ensure immediate operational visualization upon initial deployment, the Support Operations Center dashboard integrates a dynamic dataset fallback layer:
+
+* **Production Database Mode**: Real-time entries dynamically fetched from the live SQLite instance (e.g., active customer updates, status switches, and manual notes).
+* **Visual Enrichment Mode (Demo Workspace)**: When the core query layer identifies an empty relational state (0 active ledger entries), the controller layer safely populates the grid with **8 hardcoded Indian Enterprise & SaaS tech company profiles** (`TKT-001` through `TKT-008`).
+
+### ⚙️ Deterministic Server-Side Filtering
+Unlike basic client-side templates, all filtering parameters are executed natively within the Python ASGI backend:
+* **Dropdown Status Hooks**: Filtering parameters (`Open`, `In Progress`, `Closed`) evaluate both database rows and mock structures prior to template serialization.
+* **Regular Expression Text Queries**: The universal search field parses token sub-strings against target fields (`customer_name`, `customer_email`, `ticket_id`, `subject`) globally.
+* **Atomic Metric Counters**: Priority allocations (`High`, `Medium`, `Low`) and proportional percentage indicators are pre-calculated as server-side context scalars to maintain lightweight frontend render execution.
