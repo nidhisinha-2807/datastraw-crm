@@ -109,13 +109,13 @@ async def home(request: Request, status: str = None, search: str = None):
         cursor = await db.execute(query, params)
         rows = await cursor.fetchall()
         
-        # 1. Map rows safely to a standard Python dictionary list
+        # Parse SQL rows safely
         columns = [description[0] for description in cursor.description]
         db_tickets = []
         for row in rows:
             db_tickets.append(dict(zip(columns, row)))
             
-        # 2. Hardcoded Indian Tech Company Demo items
+        # Hardcoded Indian Tech Company Demo items
         demo_tickets = [
             {"ticket_id":"TKT-001","customer_name":"Arjun Mehta","customer_email":"arjun@techcorp.in","subject":"Payment gateway timeout","status":"Open","priority":"High","created_at":"2026-06-10"},
             {"ticket_id":"TKT-002","customer_name":"Priya Sharma","customer_email":"priya@startupx.com","subject":"Dashboard not loading on mobile","status":"In Progress","priority":"Medium","created_at":"2026-06-11"},
@@ -127,19 +127,28 @@ async def home(request: Request, status: str = None, search: str = None):
             {"ticket_id":"TKT-008","customer_name":"Meera Joshi","customer_email":"meera@pixelworks.in","subject":"Dark mode rendering glitch","status":"Closed","priority":"Low","created_at":"2026-06-13"}
         ]
         
-        # 3. Choose active dataset
+        # Dataset allocation
         all_tickets = db_tickets if db_tickets else demo_tickets
         is_demo = len(db_tickets) == 0
         
-        # 4. Compute all counters safely right here in Python!
+        # Calculate counters purely in Python
         total = len(all_tickets)
         open_count = sum(1 for t in all_tickets if t.get("status") == "Open")
         progress_count = sum(1 for t in all_tickets if t.get("status") == "In Progress")
         closed_count = sum(1 for t in all_tickets if t.get("status") == "Closed")
         
-        high_count = sum(1 for t in all_tickets if t.get("priority") == "High")
-        med_count = sum(1 for t in all_tickets if t.get("priority") == "Medium")
-        low_count = sum(1 for t in all_tickets if t.get("priority") == "Low")
+        high = sum(1 for t in all_tickets if t.get("priority") == "High")
+        med = sum(1 for t in all_tickets if t.get("priority") == "Medium")
+        low = sum(1 for t in all_tickets if t.get("priority") == "Low")
+        
+        # Pre-calculate percentage allocations safely
+        open_pct = int((open_count / total) * 100) if total > 0 else 0
+        progress_pct = int((progress_count / total) * 100) if total > 0 else 0
+        closed_pct = int((closed_count / total) * 100) if total > 0 else 0
+        
+        high_pct = int((high / total) * 100) if total > 0 else 0
+        med_pct = int((med / total) * 100) if total > 0 else 0
+        low_pct = int((low / total) * 100) if total > 0 else 0
             
         return templates.TemplateResponse("index.html", {
             "request": request,
@@ -149,9 +158,15 @@ async def home(request: Request, status: str = None, search: str = None):
             "open_count": open_count,
             "progress_count": progress_count,
             "closed_count": closed_count,
-            "high": high_count,
-            "med": med_count,
-            "low": low_count,
+            "high": high,
+            "med": med,
+            "low": low,
+            "open_pct": open_pct,
+            "progress_pct": progress_pct,
+            "closed_pct": closed_pct,
+            "high_pct": high_pct,
+            "med_pct": med_pct,
+            "low_pct": low_pct,
             "current_status": status or "",
             "current_search": search or ""
         })

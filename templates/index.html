@@ -3,9 +3,6 @@
 
 {% block content %}
 
-{# All metrics and dataset arrays are fed directly from the Python backend router context to remain stable #}
-{% set all_tickets = tickets if tickets else [] %}
-
 <div class="page-enter">
 
   <div class="flex justify-between items-end mb-8">
@@ -40,11 +37,9 @@
         <p class="text-indigo-300/60 text-xs font-mono uppercase tracking-wider mb-3">Open</p>
         <p class="text-4xl font-bold text-indigo-300 glow-text mb-1">{{ open_count }}</p>
         <div class="w-full h-1 rounded-full mt-3" style="background:rgba(255,255,255,0.08)">
-          {% if total > 0 %}
-          <div class="h-1 rounded-full progress-fill" style="width:{{ (open_count/total*100)|int }}%;background:linear-gradient(90deg,#6366f1,#818cf8);animation-delay:0.2s"></div>
-          {% endif %}
+          <div class="h-1 rounded-full progress-fill" style="width:{{ open_pct }}%;background:linear-gradient(90deg,#6366f1,#818cf8);animation-delay:0.2s"></div>
         </div>
-        <p class="text-white/20 text-xs font-mono mt-1">{{ (open_count/total*100)|int if total > 0 else 0 }}% of total</p>
+        <p class="text-white/20 text-xs font-mono mt-1">{{ open_pct }}% of total</p>
       </div>
 
       <div class="glass-card p-5">
@@ -53,11 +48,9 @@
         <p class="text-yellow-300/60 text-xs font-mono uppercase tracking-wider mb-3">Active</p>
         <p class="text-4xl font-bold text-yellow-300 mb-1" style="text-shadow:0 0 20px rgba(245,158,11,0.8)">{{ progress_count }}</p>
         <div class="w-full h-1 rounded-full mt-3" style="background:rgba(255,255,255,0.08)">
-          {% if total > 0 %}
-          <div class="h-1 rounded-full progress-fill" style="width:{{ (progress_count/total*100)|int }}%;background:linear-gradient(90deg,#f59e0b,#fcd34d);animation-delay:0.3s"></div>
-          {% endif %}
+          <div class="h-1 rounded-full progress-fill" style="width:{{ progress_pct }}%;background:linear-gradient(90deg,#f59e0b,#fcd34d);animation-delay:0.3s"></div>
         </div>
-        <p class="text-white/20 text-xs font-mono mt-1">{{ (progress_count/total*100)|int if total > 0 else 0 }}% of total</p>
+        <p class="text-white/20 text-xs font-mono mt-1">{{ progress_pct }}% of total</p>
       </div>
 
       <div class="glass-card p-5">
@@ -66,11 +59,9 @@
         <p class="text-emerald-300/60 text-xs font-mono uppercase tracking-wider mb-3">Resolved</p>
         <p class="text-4xl font-bold text-emerald-300 mb-1" style="text-shadow:0 0 20px rgba(16,185,129,0.8)">{{ closed_count }}</p>
         <div class="w-full h-1 rounded-full mt-3" style="background:rgba(255,255,255,0.08)">
-          {% if total > 0 %}
-          <div class="h-1 rounded-full progress-fill" style="width:{{ (closed_count/total*100)|int }}%;background:linear-gradient(90deg,#10b981,#6ee7b7);animation-delay:0.4s"></div>
-          {% endif %}
+          <div class="h-1 rounded-full progress-fill" style="width:{{ closed_pct }}%;background:linear-gradient(90deg,#10b981,#6ee7b7);animation-delay:0.4s"></div>
         </div>
-        <p class="text-white/20 text-xs font-mono mt-1">{{ (closed_count/total*100)|int if total > 0 else 0 }}% of total</p>
+        <p class="text-white/20 text-xs font-mono mt-1">{{ closed_pct }}% of total</p>
       </div>
 
       <div class="col-span-2 sm:col-span-4 glass-card p-5">
@@ -80,21 +71,21 @@
           <div class="flex items-center gap-3">
             <span class="text-red-300 text-xs font-mono w-14">HIGH</span>
             <div class="flex-1 h-2 rounded-full" style="background:rgba(255,255,255,0.06)">
-              <div class="h-2 rounded-full progress-fill" style="width:{{ (high/total*100)|int if total>0 else 0 }}%;background:linear-gradient(90deg,#ef4444,#fca5a5);"></div>
+              <div class="h-2 rounded-full progress-fill" style="width:{{ high_pct }}%;background:linear-gradient(90deg,#ef4444,#fca5a5);"></div>
             </div>
             <span class="text-red-300 text-xs font-mono w-4">{{ high }}</span>
           </div>
           <div class="flex items-center gap-3">
             <span class="text-yellow-300 text-xs font-mono w-14">MED</span>
             <div class="flex-1 h-2 rounded-full" style="background:rgba(255,255,255,0.06)">
-              <div class="h-2 rounded-full progress-fill" style="width:{{ (med/total*100)|int if total>0 else 0 }}%;background:linear-gradient(90deg,#f59e0b,#fcd34d);animation-delay:0.2s"></div>
+              <div class="h-2 rounded-full progress-fill" style="width:{{ med_pct }}%;background:linear-gradient(90deg,#f59e0b,#fcd34d);animation-delay:0.2s"></div>
             </div>
             <span class="text-yellow-300 text-xs font-mono w-4">{{ med }}</span>
           </div>
           <div class="flex items-center gap-3">
             <span class="text-gray-300 text-xs font-mono w-14">LOW</span>
             <div class="flex-1 h-2 rounded-full" style="background:rgba(255,255,255,0.06)">
-              <div class="h-2 rounded-full progress-fill" style="width:{{ (low/total*100)|int if total>0 else 0 }}%;background:linear-gradient(90deg,#6b7280,#d1d5db);animation-delay:0.4s"></div>
+              <div class="h-2 rounded-full progress-fill" style="width:{{ low_pct }}%;background:linear-gradient(90deg,#6b7280,#d1d5db);animation-delay:0.4s"></div>
             </div>
             <span class="text-gray-300 text-xs font-mono w-4">{{ low }}</span>
           </div>
@@ -171,7 +162,7 @@
         </tr>
       </thead>
       <tbody>
-        {% for t in all_tickets %}
+        {% for t in tickets %}
         <tr class="ticket-row">
           <td class="px-6 py-4 font-mono text-purple-300 text-xs font-semibold">{{ t.ticket_id }}</td>
           <td class="px-6 py-4">
