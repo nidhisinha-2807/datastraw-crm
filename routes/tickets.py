@@ -109,16 +109,32 @@ async def home(request: Request, status: str = None, search: str = None):
         cursor = await db.execute(query, params)
         rows = await cursor.fetchall()
         
-        # Explicit column-to-value key parsing safely maps aiosqlite structures
+        # 1. Cleanly map aiosqlite structures to dictionary list format
         columns = [description[0] for description in cursor.description]
-        tickets = []
+        db_tickets = []
         for row in rows:
-            ticket_dict = dict(zip(columns, row))
-            tickets.append(ticket_dict)
+            db_tickets.append(dict(zip(columns, row)))
+            
+        # 2. Hardcoded Indian Tech Company Demo items (Exactly matching database fields)
+        demo_tickets = [
+            {"ticket_id":"TKT-001","customer_name":"Arjun Mehta","customer_email":"arjun@techcorp.in","subject":"Payment gateway timeout","status":"Open","priority":"High","created_at":"2026-06-10"},
+            {"ticket_id":"TKT-002","customer_name":"Priya Sharma","customer_email":"priya@startupx.com","subject":"Dashboard not loading on mobile","status":"In Progress","priority":"Medium","created_at":"2026-06-11"},
+            {"ticket_id":"TKT-003","customer_name":"Rohit Verma","customer_email":"rohit@enterprise.co","subject":"Invoice PDF export broken","status":"Closed","priority":"Low","created_at":"2026-06-11"},
+            {"ticket_id":"TKT-004","customer_name":"Sneha Patel","customer_email":"sneha@saasco.io","subject":"2FA emails not arriving","status":"Open","priority":"High","created_at":"2026-06-12"},
+            {"ticket_id":"TKT-005","customer_name":"Karan Singh","customer_email":"karan@devhub.dev","subject":"API rate limit exceeded","status":"In Progress","priority":"High","created_at":"2026-06-12"},
+            {"ticket_id":"TKT-006","customer_name":"Ananya Nair","customer_email":"ananya@cloudfirm.net","subject":"Account data not syncing","status":"Closed","priority":"Medium","created_at":"2026-06-13"},
+            {"ticket_id":"TKT-007","customer_name":"Vikram Das","customer_email":"vikram@finledger.io","subject":"CSV import returns error 500","status":"Open","priority":"Medium","created_at":"2026-06-13"},
+            {"ticket_id":"TKT-008","customer_name":"Meera Joshi","customer_email":"meera@pixelworks.in","subject":"Dark mode rendering glitch","status":"Closed","priority":"Low","created_at":"2026-06-13"}
+        ]
+        
+        # 3. Seamlessly combine lists or fallback safely
+        all_tickets = db_tickets if db_tickets else demo_tickets
+        is_demo = len(db_tickets) == 0
             
         return templates.TemplateResponse("index.html", {
             "request": request,
-            "tickets": tickets if tickets else None, # Clean ternary interface passing
+            "tickets": all_tickets, 
+            "is_demo_mode": is_demo,
             "current_status": status or "",
             "current_search": search or ""
         })

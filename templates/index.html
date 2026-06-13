@@ -3,22 +3,8 @@
 
 {% block content %}
 
-{% set demo = [
-  {"ticket_id":"TKT-001","customer_name":"Arjun Mehta","customer_email":"arjun@techcorp.in","subject":"Payment gateway timeout","status":"Open","priority":"High","created_at":"2026-06-10"},
-  {"ticket_id":"TKT-002","customer_name":"Priya Sharma","customer_email":"priya@startupx.com","subject":"Dashboard not loading on mobile","status":"In Progress","priority":"Medium","created_at":"2026-06-11"},
-  {"ticket_id":"TKT-003","customer_name":"Rohit Verma","customer_email":"rohit@enterprise.co","subject":"Invoice PDF export broken","status":"Closed","priority":"Low","created_at":"2026-06-11"},
-  {"ticket_id":"TKT-004","customer_name":"Sneha Patel","customer_email":"sneha@saasco.io","subject":"2FA emails not arriving","status":"Open","priority":"High","created_at":"2026-06-12"},
-  {"ticket_id":"TKT-005","customer_name":"Karan Singh","customer_email":"karan@devhub.dev","subject":"API rate limit exceeded","status":"In Progress","priority":"High","created_at":"2026-06-12"},
-  {"ticket_id":"TKT-006","customer_name":"Ananya Nair","customer_email":"ananya@cloudfirm.net","subject":"Account data not syncing","status":"Closed","priority":"Medium","created_at":"2026-06-13"},
-  {"ticket_id":"TKT-007","customer_name":"Vikram Das","customer_email":"vikram@finledger.io","subject":"CSV import returns error 500","status":"Open","priority":"Medium","created_at":"2026-06-13"},
-  {"ticket_id":"TKT-008","customer_name":"Meera Joshi","customer_email":"meera@pixelworks.in","subject":"Dark mode rendering glitch","status":"Closed","priority":"Low","created_at":"2026-06-13"}
-] %}
-
-{# Safe array assignment to prevent template tuple key errors #}
-{% set all_tickets = tickets %}
-{% if not tickets %}
-  {% set all_tickets = demo %}
-{% endif %}
+{# Python handles array sanitization and combined fallback tracking safely #}
+{% set all_tickets = tickets if tickets else [] %}
 
 {% set open_count = all_tickets | selectattr("status","equalto","Open") | list | length %}
 {% set progress_count = all_tickets | selectattr("status","equalto","In Progress") | list | length %}
@@ -175,9 +161,9 @@
     <div class="px-6 py-3 flex items-center justify-between" style="border-bottom:1px solid rgba(139,92,246,0.15);">
       <div class="flex items-center gap-2">
         <span class="pulse-dot"></span>
-        <span class="text-white/40 text-xs font-mono uppercase tracking-widest">Live Ticket Feed — {{ all_tickets|length }} records</span>
+        <span class="text-white/40 text-xs font-mono uppercase tracking-widest">Live Ticket Feed — {{ total }} records</span>
       </div>
-      {% if not tickets %}
+      {% if is_demo_mode %}
       <span class="text-purple-400/50 text-xs font-mono">[ DEMO DATA ]</span>
       {% endif %}
     </div>
@@ -214,7 +200,7 @@
           </td>
           <td class="px-6 py-4 text-white/30 text-xs font-mono">{{ t.created_at[:10] if t.created_at|length > 10 else t.created_at }}</td>
           <td class="px-6 py-4">
-            {% if tickets %}
+            {% if not is_demo_mode %}
             <a href="/tickets/{{ t.ticket_id }}" class="text-purple-400 hover:text-purple-200 text-xs font-mono transition" style="text-shadow:0 0 10px rgba(139,92,246,0.5)">[ VIEW ]</a>
             {% else %}
             <span class="text-white/20 text-xs font-mono">[ DEMO ]</span>
